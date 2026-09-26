@@ -170,26 +170,30 @@ function statusBadge(status){
 
 /* ================= PRODUCTS ================= */
 let editingProductId = null;
+let editingProductImageUrl = null; // existing photo URL when editing, kept unless replaced
+let pendingImageFile = null;       // newly chosen file, uploaded on submit
 
-function buildIconPicker(selected){
-  const grid = document.getElementById('iconPickGrid');
-  grid.innerHTML = Object.keys(icons).map(key => `
-    <div class="icon-pick ${key===selected?'selected':''}" data-icon="${key}" title="${key}">${icons[key]}</div>
-  `).join('');
-  grid.querySelectorAll('.icon-pick').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      grid.querySelectorAll('.icon-pick').forEach(x=>x.classList.remove('selected'));
-      el.classList.add('selected');
-    });
-  });
+function showImagePreview(url){
+  const img = document.getElementById('pfImagePreview');
+  const empty = document.getElementById('pfImagePreviewEmpty');
+  if(url){ img.src = url; img.style.display = 'block'; empty.style.display = 'none'; }
+  else { img.style.display = 'none'; empty.style.display = 'block'; img.src = ''; }
 }
-function getSelectedIcon(){
-  const el = document.querySelector('#iconPickGrid .icon-pick.selected');
-  return el ? el.dataset.icon : Object.keys(icons)[0];
-}
+
+document.getElementById('pfImageFile').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  pendingImageFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => showImagePreview(ev.target.result);
+  reader.readAsDataURL(file);
+});
 
 function openProductForm(product){
   editingProductId = product ? product.id : null;
+  editingProductImageUrl = product ? (product.image_url || null) : null;
+  pendingImageFile = null;
+  document.getElementById('pfImageFile').value = '';
   document.getElementById('productForm').classList.add('active');
   document.getElementById('pfSubmitBtn').textContent = product ? 'Update Product' : 'Add Product';
   document.getElementById('pfName').value = product ? product.name : '';
@@ -197,26 +201,53 @@ function openProductForm(product){
   document.getElementById('pfPrice').value = product ? product.price : '';
   document.getElementById('pfDesc').value = product ? product.description : '';
   document.getElementById('pfActive').checked = product ? product.active : true;
-  buildIconPicker(product ? product.icon : Object.keys(icons)[0]);
+  showImagePreview(editingProductImageUrl);
   document.getElementById('productForm').scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 function closeProductForm(){
   editingProductId = null;
+  editingProductImageUrl = null;
+  pendingImageFile = null;
   document.getElementById('productForm').classList.remove('active');
   document.getElementById('productForm').reset();
+  showImagePreview(null);
 }
 
 document.getElementById('addProductBtn').addEventListener('click', ()=> openProductForm(null));
 document.getElementById('pfCancelBtn').addEventListener('click', closeProductForm);
 
+async function uploadProductImage(file){
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const { error } = await supabaseClient.storage.from('product-images').upload(path, file, { upsert: true });
+  if(error) throw error;
+  const { data } = supabaseClient.storage.from('product-images').getPublicUrl(path);
+  return data.publicUrl;
+}
+
 document.getElementById('productForm').addEventListener('submit', async e=>{
   e.preventDefault();
+  const submitBtn = document.getElementById('pfSubmitBtn');
+  submitBtn.setAttribute('disabled','true');
+
+  let imageUrl = editingProductImageUrl;
+  if(pendingImageFile){
+    try{
+      imageUrl = await uploadProductImage(pendingImageFile);
+    } catch(err){
+      showToast("Couldn't upload photo");
+      console.error(err);
+      submitBtn.removeAttribute('disabled');
+      return;
+    }
+  }
+
   const payload = {
     name: document.getElementById('pfName').value.trim(),
     category: document.getElementById('pfCategory').value.trim(),
     price: Number(document.getElementById('pfPrice').value),
     description: document.getElementById('pfDesc').value.trim(),
-    icon: getSelectedIcon(),
+    image_url: imageUrl,
     active: document.getElementById('pfActive').checked
   };
 
@@ -227,6 +258,7 @@ document.getElementById('productForm').addEventListener('submit', async e=>{
     ({ error } = await supabaseClient.from('products').insert(payload));
   }
 
+  submitBtn.removeAttribute('disabled');
   if(error){ showToast("Couldn't save product"); console.error(error); return; }
   showToast(editingProductId ? "Product updated" : "Product added");
   closeProductForm();
@@ -249,7 +281,7 @@ async function loadProductsTab(){
     <tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th></th></tr>
     ${data.map(p=>`
       <tr>
-        <td class="admin-icon-cell">${icons[p.icon] || ''}</td>
+        <td class="admin-icon-cell">${p.image_url ? `<img src="${p.image_url}" alt="">` : (icons[p.icon] || '')}</td>
         <td>${p.name}</td>
         <td>${p.category}</td>
         <td>${money(p.price)}</td>
