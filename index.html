@@ -2,192 +2,445 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Kieke's Pukies</title>
-<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F6F4EE">
+<title>Kieke's Pukies — Fresh Seafood, Meat, Poultry & Produce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<style>
-  body{background:var(--bg,#F7F4EC);}
-  .admin-shell{display:none;min-height:100vh;grid-template-columns:220px 1fr;}
-  .admin-shell.active{display:grid;}
-  .admin-sidebar{background:var(--soil);color:#fff;padding:24px 18px;display:flex;flex-direction:column;}
-  .admin-sidebar .brand{font-family:'Fraunces',serif;font-weight:700;font-size:18px;margin-bottom:4px;}
-  .admin-sidebar .tag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#ffffff99;margin-bottom:28px;}
-  .admin-nav-btn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;color:#ffffffcc;font-size:14.5px;font-weight:600;padding:11px 12px;border-radius:var(--radius-sm);cursor:pointer;margin-bottom:4px;font-family:inherit;}
-  .admin-nav-btn:hover{background:#ffffff14;color:#fff;}
-  .admin-nav-btn.active{background:var(--brand);color:#fff;}
-  .admin-sidebar-foot{margin-top:auto;padding-top:20px;border-top:1px solid #ffffff22;}
-  .admin-view-link{display:block;font-size:13px;color:#ffffffaa;margin-bottom:14px;text-decoration:none;}
-  .admin-view-link:hover{color:#fff;}
-  .admin-who{font-size:12.5px;color:#ffffff99;margin-bottom:10px;word-break:break-all;}
-  .admin-main{padding:32px 36px;overflow-x:hidden;}
-  .admin-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;flex-wrap:wrap;gap:12px;}
-  .admin-h1{font-family:'Fraunces',serif;font-weight:700;font-size:26px;}
-  .admin-tabs{display:none;}
-  .admin-tabs.active{display:block;}
-
-  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px;}
-  .stat-card{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:20px;}
-  .stat-card .num{font-family:'Fraunces',serif;font-weight:700;font-size:28px;}
-  .stat-card .lbl{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
-
-  .admin-card{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:24px;margin-bottom:24px;}
-  .admin-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
-  .admin-card-head h2{font-family:'Fraunces',serif;font-size:19px;font-weight:700;}
-
-  table.admin-table{width:100%;border-collapse:collapse;font-size:13.5px;}
-  table.admin-table th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;}
-  table.admin-table td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle;}
-  table.admin-table tr:last-child td{border-bottom:none;}
-  .admin-icon-cell svg{width:26px;height:26px;}
-  .admin-badge{display:inline-block;padding:3px 10px;border-radius:var(--radius-pill);font-size:11.5px;font-weight:700;white-space:nowrap;}
-  .badge-active{background:var(--brand-tint);color:var(--brand-dark);}
-  .badge-inactive{background:var(--line);color:var(--ink-soft);}
-  .row-actions{display:flex;gap:8px;}
-  .row-actions button{background:none;border:1px solid var(--line);border-radius:var(--radius-sm);padding:5px 10px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--soil);}
-  .row-actions button:hover{border-color:var(--soil);}
-  .row-actions button.danger{color:var(--accent-dark);}
-  select.status-select{font-family:inherit;font-size:12.5px;font-weight:600;padding:6px 8px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--paper);color:var(--soil);}
-
-  .admin-form{display:none;background:var(--brand-tint);border-radius:var(--radius);padding:20px;margin-bottom:20px;}
-  .admin-form.active{display:block;}
-  .admin-form .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  .admin-form label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px;}
-  .admin-form input,.admin-form select,.admin-form textarea{width:100%;font-family:inherit;font-size:14px;padding:9px 11px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:var(--paper);}
-  .admin-form .field{margin-bottom:14px;}
-  .admin-form .checkline{display:flex;align-items:center;gap:8px;}
-  .admin-form .checkline input{width:auto;}
-  .icon-pick-grid{display:flex;flex-wrap:wrap;gap:8px;}
-  .icon-pick{width:40px;height:40px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:var(--paper);display:flex;align-items:center;justify-content:center;cursor:pointer;}
-  .icon-pick svg{width:22px;height:22px;}
-  .icon-pick.selected{border-color:var(--brand);background:var(--brand-tint);}
-
-  .filter-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-  .filter-pill{padding:6px 14px;border-radius:var(--radius-pill);border:1.5px solid var(--line);background:var(--paper);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink-soft);}
-  .filter-pill.active{background:var(--soil);color:#fff;border-color:var(--soil);}
-
-  .admin-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;}
-  .admin-avatar-fallback{width:32px;height:32px;border-radius:50%;background:var(--moss);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'Fraunces',serif;}
-
-  /* ---------- GATE ---------- */
-  .gate-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
-  .gate-box{max-width:380px;width:100%;background:var(--paper);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:40px;text-align:center;}
-  .gate-box h1{font-family:'Fraunces',serif;font-weight:700;font-size:22px;margin-bottom:6px;}
-  .gate-box p{font-size:13.5px;color:var(--ink-soft);margin-bottom:24px;}
-  #adminGoogleBtn{display:flex;justify-content:center;min-height:44px;}
-  .gate-denied{display:none;}
-  .gate-denied.active{display:block;}
-
-  @media (max-width:820px){
-    .admin-shell.active{grid-template-columns:1fr;}
-    .admin-sidebar{flex-direction:row;overflow-x:auto;padding:14px;align-items:center;}
-    .admin-sidebar .brand,.admin-sidebar .tag,.admin-sidebar-foot{display:none;}
-    .admin-nav-btn{white-space:nowrap;margin-bottom:0;}
-    .admin-main{padding:20px 16px;}
-    .admin-form .grid2{grid-template-columns:1fr;}
-  }
-</style>
 </head>
 <body>
 
-<!-- ================= GATE (shown until an admin is confirmed) ================= -->
-<div class="gate-wrap" id="gateWrap">
-  <div class="gate-box">
-    <h1>Kieke's Pukies</h1>
-    <p id="gateMsg">Admin sign-in required.</p>
-    <div id="adminGoogleBtn"></div>
-    <div class="gate-denied" id="gateDenied">
-      <p style="color:var(--accent-dark);font-weight:600;margin-bottom:14px;">This account doesn't have admin access.</p>
-      <button class="btn btn-outline btn-full" id="gateSignOutBtn">Sign out</button>
+<header>
+  <div class="navbar">
+    <div class="nav-left">
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+      <a class="brand" href="#" data-nav="home">
+        <span class="mark-wrap"><svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.6 22 12 22C16.4 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z" stroke="currentColor" stroke-width="1.6" fill="currentColor"/></svg></span>
+        Kieke's Pukies
+      </a>
+    </div>
+    <nav class="links" id="navLinks" aria-label="Primary">
+      <button data-nav="home">Home</button>
+      <button data-nav="shop">Shop</button>
+      <button data-nav="about">About Us</button>
+      <button data-nav="how">How It Works</button>
+      <button data-nav="sustainability">Sustainability</button>
+      <button data-nav="contact">Contact Us</button>
+    </nav>
+    <div class="nav-right">
+      <button class="icon-btn" id="cartNavBtn" data-nav="cart" aria-label="Cart">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.4 12.2A2 2 0 0 0 9.36 18h7.5a2 2 0 0 0 1.96-1.6L20.5 8H6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="21" r="1.4" fill="currentColor"/><circle cx="17" cy="21" r="1.4" fill="currentColor"/></svg>
+        <span class="label">Cart</span><span class="cart-count zero" id="cartCount">0</span>
+      </button>
+      <button class="icon-btn" id="loginNavBtn" data-nav="login" aria-label="Account">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M4 20c0-3.9 3.6-7 8-7s8 3.1 8 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span class="label" id="loginNavLabel">Log In</span>
+      </button>
+    </div>
+  </div>
+  <div class="nav-backdrop" id="navBackdrop"></div>
+</header>
+
+<main>
+
+<!-- ================= HOME ================= -->
+<section data-page="home" class="active">
+  <div class="hero-band">
+  <div class="wrap hero">
+    <div>
+      <div class="eyebrow">Sourced fresh, every morning</div>
+      <h1>Seafood, meat and produce, chosen the way you'd choose it.</h1>
+      <p class="lead">Kieke's Pukies brings in wild-caught seafood, dry-aged meat, free-range poultry and fruit picked at peak season — sourced each morning and cut to order, never held in a freezer.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" data-nav="shop">Shop today's counter</button>
+        <button class="btn btn-outline" data-nav="how">How sourcing works</button>
+      </div>
+    </div>
+    <div class="hero-art">
+      <img class="hero-image" src="Home_Image_Top.png" alt="Fresh seafood, meat and produce">
+    </div>
+  </div>
+  </div>
+
+  <div class="wrap">
+    <div class="stat-strip">
+      <div><div class="num">&lt;24h</div><div class="lbl">From harvest or catch to your door</div></div>
+      <div><div class="num">40+</div><div class="lbl">Independent farms and boats we buy from directly</div></div>
+      <div><div class="num">0</div><div class="lbl">Days anything sits in a freezer before it ships</div></div>
+    </div>
+  </div>
+
+  <div class="wrap section">
+    <div class="grid-head">
+      <div>
+        <div class="eyebrow">Today's selection</div>
+        <h2 style="font-size:30px;">From the counter</h2>
+      </div>
+      <button class="btn btn-outline" data-nav="shop">View all products</button>
+    </div>
+    <div class="product-grid" id="homeFeatured"></div>
+  </div>
+
+  <div class="wrap section-tight">
+    <div class="split">
+      <svg viewBox="0 0 240 200" fill="none" style="width:100%;">
+        <circle cx="120" cy="100" r="86" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+        <path d="M120 30a70 70 0 0 1 60 105" stroke="var(--moss)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M60 145a70 70 0 0 1 0-90" stroke="var(--clay)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M75 35 65 45 55 40" stroke="var(--moss)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M175 155 185 148 190 158" stroke="var(--clay)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="120" cy="100" r="30" fill="var(--moss)" opacity="0.15"/>
+      </svg>
+      <div>
+        <div class="eyebrow">Why Kieke's Pukies</div>
+        <h2 style="font-size:30px;margin-bottom:16px;">We still pick it out ourselves</h2>
+        <p style="color:var(--ink-soft);margin-bottom:24px;">Nothing is bought in bulk months ahead. Our buyers walk the docks and the farm stands each morning, choosing the catch and the cut the way a good butcher or fishmonger always has — then it comes straight to you.</p>
+        <button class="btn btn-primary" data-nav="sustainability">See our sourcing</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SHOP ================= -->
+<section data-page="shop">
+  <div class="wrap page-hero">
+    <div class="eyebrow">Shop</div>
+    <h1>Browse the collection</h1>
+    <p>Seafood, meat, poultry, vegetables and fruit, selected each morning — pick an item to set your quantity.</p>
+  </div>
+  <div class="wrap section-tight">
+    <div class="grid-head">
+      <div class="filters" id="filterBar"></div>
+      <div style="font-size:13.5px;color:var(--ink-soft);" id="resultCount"></div>
+    </div>
+    <div class="product-grid" id="shopGrid"></div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section data-page="about">
+  <div class="wrap page-hero">
+    <div class="eyebrow">About Us</div>
+    <h1>A market stall that never stopped choosing by hand.</h1>
+    <p>Kieke's Pukies started at a Saturday market stand in 2011, selling only what looked good that morning — nothing more.</p>
+  </div>
+  <div class="wrap section-tight split">
+    <div>
+      <h2 style="font-size:26px;margin-bottom:16px;">One buyer, one relationship at a time</h2>
+      <p style="color:var(--ink-soft);margin-bottom:16px;">We work with a small, named list of boats and farms — not a distribution network. Our buyers know which boat brought in the halibut and which farm the ribeye came off, because they were there that morning.</p>
+      <p style="color:var(--ink-soft);">Everything is cut, filleted or trimmed after your order comes in, by the same people who chose it. If we wouldn't serve it at our own table, we don't put it in yours.</p>
+    </div>
+    <svg viewBox="0 0 240 200" fill="none" style="width:100%;">
+      <rect x="20" y="40" width="200" height="130" rx="6" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+      <rect x="40" y="60" width="60" height="60" rx="4" fill="none" stroke="var(--soil)" stroke-width="1.2"/>
+      <path d="M50 90c10-8 30-8 40 0-10 8-30 8-40 0z" stroke="var(--soil)" stroke-width="1.2" fill="none"/>
+      <rect x="110" y="60" width="90" height="20" rx="3" fill="var(--line)"/>
+      <rect x="110" y="88" width="70" height="12" rx="3" fill="var(--line)"/>
+      <rect x="110" y="106" width="90" height="12" rx="3" fill="var(--line)"/>
+      <circle cx="180" cy="140" r="16" fill="var(--paper)" stroke="var(--clay)" stroke-width="1.2"/>
+      <path d="M173 140l5 5 9-11" stroke="var(--clay)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+  <div class="wrap section-tight">
+    <div class="section-header">
+      <div class="eyebrow">What we hold onto</div>
+      <h2 style="font-size:28px;">Three rules we don't break</h2>
+    </div>
+    <div class="impact-grid">
+      <div class="impact-card">
+        <div class="icon-chip"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 4v5c0 5-3.4 8.4-7 9-3.6-.6-7-4-7-9V7l7-4z" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h3>Nothing frozen and resold as fresh</h3>
+        <p>If it was ever frozen for storage, it's labelled that way — no exceptions.</p>
+      </div>
+      <div class="impact-card">
+        <div class="icon-chip"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 14-5.2M20 12a8 8 0 0 1-14 5.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M18 4v4h-4M6 20v-4h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Relationships, not contracts</h3>
+        <p>We buy direct from named boats and farms, season by season.</p>
+      </div>
+      <div class="impact-card">
+        <div class="icon-chip"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3>Cut and trimmed to order</h3>
+        <p>Nothing is portioned until your order is placed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section data-page="how">
+  <div class="wrap page-hero">
+    <div class="eyebrow">How It Works</div>
+    <h1>From order to table, in four steps</h1>
+    <p>Nothing is cut, filleted or portioned until after you order — that's most of it.</p>
+  </div>
+  <div class="wrap section-tight">
+    <div class="steps">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>Choose your order</h3>
+        <p>Browse the day's seafood, meat, poultry and produce and set your quantities.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>We source it that morning</h3>
+        <p>Your order is picked, filleted or trimmed after it comes in, not pulled from a back room.</p>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>Packed on ice</h3>
+        <p>Everything is chilled and delivered the same day or first thing the next morning.</p>
+      </div>
+      <div class="step">
+        <div class="n">4</div>
+        <h3>Cook it tonight</h3>
+        <p>It arrives ready to prep — nothing to thaw, nothing that's been sitting.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:44px;">
+      <button class="btn btn-primary" data-nav="shop">Get started</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SUSTAINABILITY ================= -->
+<section data-page="sustainability">
+  <div class="wrap page-hero">
+    <div class="eyebrow">Sustainability</div>
+    <h1>Sourcing we can trace to the source</h1>
+    <p>Every boat and every farm we buy from is measured against one question: could we take you there ourselves?</p>
+  </div>
+  <div class="wrap section-tight">
+    <div class="stat-strip">
+      <div><div class="num">100%</div><div class="lbl">Seafood traceable to boat and catch method</div></div>
+      <div><div class="num">0</div><div class="lbl">Routine antibiotics in our meat or poultry</div></div>
+      <div><div class="num">150mi</div><div class="lbl">Average distance from farm to our door</div></div>
+    </div>
+  </div>
+  <div class="wrap section-tight">
+    <div class="impact-grid">
+      <div class="impact-card">
+        <div class="icon-chip"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21c4-3 7-6.4 7-10.5A7 7 0 0 0 5 10.5C5 14.6 8 18 12 21z" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h3>Sustainable seafood only</h3>
+        <p>We buy from boats using approved, non-overfished methods — nothing farmed in crowded pens.</p>
+      </div>
+      <div class="impact-card">
+        <div class="icon-chip"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h4l3-8 4 16 3-8h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Pasture-raised, not crowded</h3>
+        <p>Our meat and poultry farms give animals real outdoor access, verified by our buyers in person.</p>
+      </div>
+      <div class="impact-card">
+        <div class="icon-chip"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M4 8l8-6 8 6M4 16l8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Picked in season</h3>
+        <p>Fruit and vegetables come from regional growers, harvested within days of reaching you.</p>
+      </div>
+    </div>
+  </div>
+  <div class="wrap section-tight split">
+    <div>
+      <h2 style="font-size:26px;margin-bottom:16px;">Ask us where anything came from</h2>
+      <p style="color:var(--ink-soft);margin-bottom:14px;">Every order comes with the boat or farm named on the packing slip. If you want to know more — the fishing method, the breed, the harvest date — our team can tell you, because they were there.</p>
+      <p style="color:var(--ink-soft);">We publish our full list of partner farms and boats once a season — nothing about it is proprietary.</p>
+    </div>
+    <svg viewBox="0 0 240 180" fill="none" style="width:100%;">
+      <circle cx="120" cy="90" r="70" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 5"/>
+      <circle cx="120" cy="30" r="14" fill="none" stroke="var(--soil)" stroke-width="1.2"/>
+      <circle cx="175" cy="120" r="14" fill="none" stroke="var(--clay)" stroke-width="1.2"/>
+      <circle cx="65" cy="120" r="14" fill="var(--paper)" stroke="var(--soil)" stroke-width="1.2"/>
+      <path d="M132 40l30 65M108 40 78 105M85 125h70" stroke="var(--soil)" stroke-width="1.2" stroke-dasharray="2 4"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section data-page="contact">
+  <div class="wrap page-hero">
+    <div class="eyebrow">Contact Us</div>
+    <h1>Ask us anything</h1>
+    <p>Orders, sourcing questions, wholesale — a real person answers within a day.</p>
+  </div>
+  <div class="wrap section-tight" style="max-width:640px;">
+    <form id="contactForm">
+      <div class="form-grid">
+        <div class="field"><label for="cName">Name</label><input id="cName" required placeholder="Jordan Reyes"></div>
+        <div class="field"><label for="cEmail">Email</label><input id="cEmail" type="email" required placeholder="you@email.com"></div>
+        <div class="field full"><label for="cTopic">Topic</label>
+          <select id="cTopic">
+            <option>Order question</option>
+            <option>Sourcing question</option>
+            <option>Wholesale / restaurants</option>
+            <option>Something else</option>
+          </select>
+        </div>
+        <div class="field full"><label for="cMsg">Message</label><textarea id="cMsg" rows="5" required placeholder="Tell us what's going on"></textarea></div>
+      </div>
+      <button type="submit" class="btn btn-primary">Send message</button>
+    </form>
+  </div>
+</section>
+
+<!-- ================= CART ================= -->
+<section data-page="cart">
+  <div class="wrap page-hero">
+    <div class="eyebrow">Cart</div>
+    <h1>Your bag</h1>
+    <div class="flow-steps">
+      <span class="flow-step current"><span class="dot">1</span>Cart</span>
+      <span class="flow-line"></span>
+      <button class="flow-step" data-nav="checkout"><span class="dot">2</span>Checkout</button>
+      <span class="flow-line"></span>
+      <span class="flow-step" aria-disabled="true"><span class="dot">3</span>Confirmation</span>
+    </div>
+  </div>
+  <div class="wrap section-tight" id="cartContent"></div>
+</section>
+
+<!-- ================= LOGIN ================= -->
+<section data-page="login">
+  <div class="wrap page-hero">
+    <div class="eyebrow">Account</div>
+    <h1>Log in</h1>
+    <p>Track orders and save your standing order.</p>
+  </div>
+  <div class="wrap section-tight">
+    <div class="auth-box" id="authBox"></div>
+  </div>
+</section>
+
+<!-- ================= MY ORDERS ================= -->
+<section data-page="orders">
+  <div class="wrap page-hero">
+    <div class="eyebrow">Account</div>
+    <h1>My Orders</h1>
+    <p>Track the status of your recent orders.</p>
+  </div>
+  <div class="wrap section-tight" id="ordersContent"></div>
+</section>
+
+<!-- ================= CHECKOUT ================= -->
+<section data-page="checkout">
+  <div class="wrap page-hero">
+    <div class="eyebrow">Checkout</div>
+    <h1>Shipping &amp; payment</h1>
+    <div class="flow-steps">
+      <button class="flow-step" data-nav="cart"><span class="dot">1</span>Cart</button>
+      <span class="flow-line"></span>
+      <span class="flow-step current"><span class="dot">2</span>Checkout</span>
+      <span class="flow-line"></span>
+      <span class="flow-step" aria-disabled="true"><span class="dot">3</span>Confirmation</span>
+    </div>
+  </div>
+  <div class="wrap section-tight">
+    <div class="checkout-layout">
+      <form id="checkoutForm">
+        <h3 style="margin-bottom:16px;">Shipping details</h3>
+        <div class="form-grid">
+          <div class="field"><label for="chName">Full name</label><input id="chName" required placeholder="Jordan Reyes"></div>
+          <div class="field"><label for="chEmail">Email</label><input id="chEmail" type="email" required placeholder="you@email.com"></div>
+          <div class="field full"><label for="chAddr">Address</label><input id="chAddr" required placeholder="118 Alder Street"></div>
+          <div class="field"><label for="chCity">City</label><input id="chCity" required placeholder="Portland"></div>
+          <div class="field"><label for="chZip">ZIP code</label><input id="chZip" required placeholder="97205"></div>
+        </div>
+        <h3 style="margin:26px 0 16px;">Payment</h3>
+        <div class="form-grid">
+          <div class="field full"><label for="chCard">Card number</label><input id="chCard" required placeholder="4242 4242 4242 4242"></div>
+          <div class="field"><label for="chExp">Expiry</label><input id="chExp" required placeholder="MM/YY"></div>
+          <div class="field"><label for="chCvc">CVC</label><input id="chCvc" required placeholder="123"></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" style="margin-top:8px;">Place order</button>
+      </form>
+      <div class="summary-box" id="checkoutSummary"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ORDER CONFIRMATION ================= -->
+<section data-page="confirmation">
+  <div class="wrap section confirm-box">
+    <svg class="confirm-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6"/><path d="M8 12.5l2.5 2.5 5.5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1 style="font-size:30px;">Order placed</h1>
+    <p style="color:var(--ink-soft);margin-top:12px;">A confirmation is on its way to your inbox. Here's what's coming.</p>
+    <div class="flow-steps">
+      <span class="flow-step" aria-disabled="true"><span class="dot">1</span>Cart</span>
+      <span class="flow-line"></span>
+      <span class="flow-step" aria-disabled="true"><span class="dot">2</span>Checkout</span>
+      <span class="flow-line"></span>
+      <span class="flow-step current"><span class="dot">3</span>Confirmation</span>
+    </div>
+    <div class="order-card" id="orderSummary"></div>
+    <div style="margin-top:32px;">
+      <button class="btn btn-primary" data-nav="shop">Keep shopping</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px;">Kieke's Pukies</div>
+        <p style="font-size:14px;color:#B7B09B;max-width:32ch;">Seafood, meat, poultry, vegetables and fruit, sourced each morning and cut to order.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#" data-nav="shop">All products</a></li>
+          <li><a href="#" data-nav="how">How sourcing works</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#" data-nav="about">About us</a></li>
+          <li><a href="#" data-nav="sustainability">Sustainability</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#" data-nav="contact">Contact us</a></li>
+          <li><a href="#" data-nav="cart">Your cart</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Kieke's Pukies Goods Co.</span>
+      <span>Made in Portland, shipped everywhere.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Product detail modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-art" id="modalArt"></div>
+    <div class="modal-info">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <div class="modal-cat" id="modalCat"></div>
+      <h2 id="modalName"></h2>
+      <div class="modal-price" id="modalPrice"></div>
+      <p class="modal-desc" id="modalDesc"></p>
+      <div class="qty-row">
+        <span style="font-size:13.5px;font-weight:600;">Quantity</span>
+        <div class="qty-stepper">
+          <button id="qtyMinus">−</button>
+          <span id="qtyValue">1</span>
+          <button id="qtyPlus">+</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" id="addToCartBtn">Add to cart</button>
     </div>
   </div>
 </div>
 
-<!-- ================= ADMIN APP ================= -->
-<div class="admin-shell" id="adminShell">
-  <aside class="admin-sidebar">
-    <div class="brand">Kieke's Pukies</div>
-    <div class="tag">Admin</div>
-    <button class="admin-nav-btn active" data-tab="dashboard">Dashboard</button>
-    <button class="admin-nav-btn" data-tab="products">Products</button>
-    <button class="admin-nav-btn" data-tab="orders">Orders</button>
-    <button class="admin-nav-btn" data-tab="users">Users</button>
-    <div class="admin-sidebar-foot">
-      <a class="admin-view-link" href="https://kiekes-pukies.vercel.app" target="_blank" rel="noopener">↗ View storefront</a>
-      <div class="admin-who" id="adminWhoEmail"></div>
-      <button class="btn btn-outline btn-full" id="adminSignOutBtn" style="background:transparent;color:#fff;border-color:#ffffff33;">Sign out</button>
-    </div>
-  </aside>
-
-  <main class="admin-main">
-    <!-- ---------- DASHBOARD ---------- -->
-    <section class="admin-tabs active" data-tab="dashboard">
-      <div class="admin-topbar"><h1 class="admin-h1">Dashboard</h1></div>
-      <div class="stat-grid" id="statGrid"></div>
-      <div class="admin-card">
-        <div class="admin-card-head"><h2>Recent orders</h2></div>
-        <div style="overflow-x:auto;"><table class="admin-table" id="recentOrdersTable"></table></div>
-      </div>
-    </section>
-
-    <!-- ---------- PRODUCTS ---------- -->
-    <section class="admin-tabs" data-tab="products">
-      <div class="admin-topbar">
-        <h1 class="admin-h1">Products</h1>
-        <button class="btn btn-primary" id="addProductBtn">+ Add Product</button>
-      </div>
-
-      <form class="admin-form" id="productForm">
-        <input type="hidden" id="pfId">
-        <div class="grid2">
-          <div class="field"><label for="pfName">Name</label><input id="pfName" required></div>
-          <div class="field"><label for="pfCategory">Category</label><input id="pfCategory" required list="catList" placeholder="e.g. Seafood"></div>
-        </div>
-        <datalist id="catList"></datalist>
-        <div class="grid2">
-          <div class="field"><label for="pfPrice">Price (USD)</label><input id="pfPrice" type="number" step="0.01" min="0" required></div>
-          <div class="field">
-            <label class="checkline" style="margin-top:30px;"><input type="checkbox" id="pfActive" checked> Active (visible on storefront)</label>
-          </div>
-        </div>
-        <div class="field"><label for="pfDesc">Description</label><textarea id="pfDesc" rows="2" required></textarea></div>
-        <div class="field"><label>Icon</label><div class="icon-pick-grid" id="iconPickGrid"></div></div>
-        <div style="display:flex;gap:10px;margin-top:16px;">
-          <button type="submit" class="btn btn-primary" id="pfSubmitBtn">Add Product</button>
-          <button type="button" class="btn btn-outline" id="pfCancelBtn">Cancel</button>
-        </div>
-      </form>
-
-      <div class="admin-card">
-        <div style="overflow-x:auto;"><table class="admin-table" id="productsTable"></table></div>
-      </div>
-    </section>
-
-    <!-- ---------- ORDERS ---------- -->
-    <section class="admin-tabs" data-tab="orders">
-      <div class="admin-topbar"><h1 class="admin-h1">Orders</h1></div>
-      <div class="filter-pills" id="orderFilterPills"></div>
-      <div class="admin-card">
-        <div style="overflow-x:auto;"><table class="admin-table" id="ordersTable"></table></div>
-      </div>
-    </section>
-
-    <!-- ---------- USERS ---------- -->
-    <section class="admin-tabs" data-tab="users">
-      <div class="admin-topbar"><h1 class="admin-h1">Users</h1></div>
-      <div class="admin-card">
-        <div style="overflow-x:auto;"><table class="admin-table" id="usersTable"></table></div>
-      </div>
-    </section>
-  </main>
-</div>
-
-<div class="toast" id="adminToast"></div>
+<div class="toast" id="toast"></div>
 
 <script src="supabase-client.js"></script>
 <script src="icons.js"></script>
-<script src="admin.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
