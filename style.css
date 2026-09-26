@@ -229,6 +229,8 @@
   .card:hover{border-color:transparent;box-shadow:var(--shadow-lg);transform:translateY(-4px);}
   .card-art{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:var(--brand-tint);padding:26px;}
   .card-art svg{width:72%;height:72%;}
+  .card-art.has-image{padding:0;overflow:hidden;}
+  .card-art.has-image img{width:100%;height:100%;object-fit:cover;display:block;}
   .card-body{padding:16px 18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;}
   .card-cat{font-size:11.5px;color:var(--brand-dark);font-weight:700;text-transform:uppercase;letter-spacing:0.02em;}
   .card-name{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--soil);margin-top:2px;}
@@ -249,6 +251,8 @@
   @media(max-width:640px){.modal{grid-template-columns:1fr;}}
   .modal-art{background:var(--brand-tint);display:flex;align-items:center;justify-content:center;padding:40px;}
   .modal-art svg{width:65%;height:65%;}
+  .modal-art.has-image{padding:0;overflow:hidden;}
+  .modal-art.has-image img{width:100%;height:100%;object-fit:cover;display:block;}
   .modal-info{padding:32px;position:relative;}
   @media(max-width:640px){.modal-art{padding:26px;min-height:180px;}.modal-info{padding:24px;}}
   .modal-close{position:absolute;top:14px;right:16px;font-size:22px;color:var(--ink-soft);line-height:1;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background .15s ease;}
@@ -276,7 +280,8 @@
     .cart-row .qty-stepper{grid-column:2;justify-self:start;}
     .cart-row .line-total{grid-column:2;justify-self:start;text-align:left;font-size:13.5px;color:var(--ink-soft);margin-top:-6px;}
   }
-  .cart-row .thumb{width:64px;height:64px;background:var(--brand-tint);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;}
+  .cart-row .thumb{width:64px;height:64px;background:var(--brand-tint);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .cart-row .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
   .cart-row .thumb svg{width:60%;height:60%;}
   .cart-row .name{font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:var(--soil);}
   .cart-row .cat{font-size:12px;color:var(--ink-soft);margin-top:2px;}
